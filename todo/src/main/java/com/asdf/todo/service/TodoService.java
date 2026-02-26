@@ -1,12 +1,10 @@
 package com.asdf.todo.service;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.asdf.todo.model.Todo;
 import com.asdf.todo.repository.TodoInMemoryRepository;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class TodoService {
@@ -26,19 +24,18 @@ public class TodoService {
 
     public Todo findById(Long id) {
         return repo.findById(id);
-
     }
+
     public Todo save(Todo todo) {
         return repo.save(todo);
-
     }
+
     public Todo update(Long id, Todo todo) {
         todo.setId(id);
         return repo.save(todo);
-
     }
+
     public void delete(Long id) {
         repo.deleteById(id);
     }
-
 }

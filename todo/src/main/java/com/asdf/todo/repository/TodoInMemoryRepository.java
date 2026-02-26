@@ -1,14 +1,12 @@
 package com.asdf.todo.repository;
 
+import com.asdf.todo.model.Todo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.springframework.stereotype.Repository;
-
-import com.asdf.todo.model.Todo;
 
 @Repository
 public class TodoInMemoryRepository {
