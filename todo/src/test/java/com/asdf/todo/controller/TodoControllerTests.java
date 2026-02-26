@@ -1,6 +1,7 @@
 package com.asdf.todo.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -71,5 +72,39 @@ public class TodoControllerTests {
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("New Todo"));
     }
-    
+
+    @Test
+    public void shouldUpdateTodo() throws Exception {
+        Todo oldTodo = new Todo();
+        oldTodo.setId(1L);
+        oldTodo.setTitle("Existing Todo");
+
+        Todo newTodo = new Todo();
+        newTodo.setId(1L);
+        newTodo.setTitle("Updated Todo");
+
+        given(todoService.findById(1L)).willReturn(oldTodo);
+        given(todoService.update(anyLong(), any(Todo.class))).willReturn(newTodo);
+
+        mockMvc.perform(patch("/api/todos/v1/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"title\": \"Updated Todo\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1L))
+            .andExpect(jsonPath("$.title").value("Updated Todo"));
+    }
+
+    @Test
+    public void shouldDeleteTodo() throws Exception {
+        Todo todo = new Todo();
+        todo.setId(1L);
+        todo.setTitle("Test Todo");
+
+        given(todoService.findById(1L)).willReturn(todo);
+
+        mockMvc.perform(delete("/api/todos/v1/1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+    }
+
 }
