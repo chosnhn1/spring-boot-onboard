@@ -31,6 +31,12 @@ public class TodoController {
 
         return ResponseEntity.ok(todos);
     }
+    
+    @PostMapping()
+    public ResponseEntity<TodoResponseDto> createTodo(@RequestBody TodoRequestDto todo) {
+        return ResponseEntity.status(201).body(todoService.save(todo));
+        // 실패하면?
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<TodoResponseDto> getTodoById(@PathVariable Long id) {
@@ -40,12 +46,6 @@ public class TodoController {
         }
 
         return ResponseEntity.ok(todo);
-    }
-
-    @PostMapping()
-    public ResponseEntity<TodoResponseDto> createTodo(@RequestBody TodoRequestDto todo) {
-        return ResponseEntity.status(201).body(todoService.save(todo));
-        // 실패하면?
     }
 
     @PatchMapping("/{id}")
