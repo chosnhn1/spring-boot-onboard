@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: minilog-mysql
+  datasource:
+    url: jdbc:mysql://localhost:3307/minilog_db
+    username: minilog_user
+    password: dev_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
