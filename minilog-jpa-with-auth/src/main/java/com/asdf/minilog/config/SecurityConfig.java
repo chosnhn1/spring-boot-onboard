@@ -1,5 +1,7 @@
 package com.asdf.minilog.config;
 
+import com.asdf.minilog.security.JwtAuthenticationEntryPoint;
+import com.asdf.minilog.security.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.asdf.minilog.security.JwtAuthenticationEntryPoint;
-import com.asdf.minilog.security.JwtRequestFilter;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -28,7 +27,9 @@ public class SecurityConfig {
     private JwtRequestFilter jwtRequestFilter;
 
     @Autowired
-    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtRequestFilter jwtRequestFilter) {
+    public SecurityConfig(
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            JwtRequestFilter jwtRequestFilter) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtRequestFilter = jwtRequestFilter;
     }
@@ -39,7 +40,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManagerBean(
+            AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -47,25 +49,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/api/v2/auth/login", "/swagger-ui/**", "/v3/api-docs/**")
-                .permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v2/user")
-                .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v2/user/{userId}")
-                .permitAll()
-                .requestMatchers(HttpMethod.DELETE, "/api/v2/user/{userId}")
-                .hasRole("ADMIN")
-                .anyRequest()
-                .authenticated()
-        )
-        .exceptionHandling(exceptionHandling -> exceptionHandling
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-        )
-        .sessionManagement(sessionManagement -> sessionManagement
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        );
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(
+                        (requests) ->
+                                requests.requestMatchers(
+                                                "/api/v2/auth/login",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs/**")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/v2/user")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/api/v2/user/{userId}")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.DELETE, "/api/v2/user/{userId}")
+                                        .hasRole("ADMIN")
+                                        .anyRequest()
+                                        .authenticated())
+                .exceptionHandling(
+                        exceptionHandling ->
+                                exceptionHandling.authenticationEntryPoint(
+                                        jwtAuthenticationEntryPoint))
+                .sessionManagement(
+                        sessionManagement ->
+                                sessionManagement.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS));
 
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

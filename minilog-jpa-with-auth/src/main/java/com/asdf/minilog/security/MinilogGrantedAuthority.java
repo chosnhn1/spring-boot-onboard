@@ -1,8 +1,7 @@
 package com.asdf.minilog.security;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import com.asdf.minilog.entity.Role;
+import org.springframework.security.core.GrantedAuthority;
 
 public class MinilogGrantedAuthority implements GrantedAuthority {
     private final Role role;
@@ -37,5 +36,4 @@ public class MinilogGrantedAuthority implements GrantedAuthority {
     public String toString() {
         return this.role.name();
     }
-
 }

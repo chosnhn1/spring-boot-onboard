@@ -2,24 +2,28 @@ package com.asdf.minilog.controller;
 
 import com.asdf.minilog.dto.UserRequestDto;
 import com.asdf.minilog.dto.UserResponseDto;
+import com.asdf.minilog.security.MinilogUserDetails;
 import com.asdf.minilog.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** JWT 적용 updateUser: JWT 인증 정보 사용 deleteUser: 관리자만 (PreAuthorize 적용) */
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v2/user")
 public class UserController {
 
     private final UserService userService;
@@ -62,12 +66,15 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "사용자 없음")
     })
     public ResponseEntity<UserResponseDto> updateUser(
-            @PathVariable Long userId, @RequestBody UserRequestDto updatedUser) {
-        UserResponseDto user = userService.updateUser(userId, updatedUser);
+            @AuthenticationPrincipal MinilogUserDetails userDetails,
+            @PathVariable Long userId,
+            @RequestBody UserRequestDto updatedUser) {
+        UserResponseDto user = userService.updateUser(userDetails, userId, updatedUser);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "사용자 삭제")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "성공"),

@@ -18,7 +18,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -77,7 +76,7 @@ public class User {
     public void setPassword(String password) {
         this.password = passwordEncoder.encode(password);
     }
-    
+
     public static class UserBuilder {
         private Long id;
         private String username;
@@ -132,7 +131,7 @@ public class User {
             user.updatedAt = this.updatedAt;
             user.articles = this.articles;
             user.roles = this.roles;
-            
+
             return user;
         }
     }

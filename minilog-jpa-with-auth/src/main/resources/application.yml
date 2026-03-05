@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    include: secret
   config:import:optional:file: .env[.properties]
   application:
     name: minilog-mysql-with-auth
@@ -11,5 +13,3 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-jwt:
-  secret: ${JWT_SECRET}

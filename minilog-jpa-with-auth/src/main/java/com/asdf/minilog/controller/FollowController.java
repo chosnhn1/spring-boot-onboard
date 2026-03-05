@@ -2,6 +2,7 @@ package com.asdf.minilog.controller;
 
 import com.asdf.minilog.dto.FollowRequestDto;
 import com.asdf.minilog.dto.FollowResponseDto;
+import com.asdf.minilog.security.MinilogUserDetails;
 import com.asdf.minilog.service.FollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** 변경점: Authorization 적용 */
 @RestController
-@RequestMapping("/api/v1/follow")
+@RequestMapping("/api/v2/follow")
 public class FollowController {
 
     private final FollowService followService;
@@ -34,23 +37,26 @@ public class FollowController {
         @ApiResponse(responseCode = "200", description = "성공"),
         @ApiResponse(responseCode = "404", description = "사용자 없음"),
     })
-    public ResponseEntity<FollowResponseDto> follow(@RequestBody FollowRequestDto request) {
-        Long followerId = request.getFollowerId();
+    public ResponseEntity<FollowResponseDto> follow(
+            @AuthenticationPrincipal MinilogUserDetails userDetails,
+            @RequestBody FollowRequestDto request) {
+        Long followerId = userDetails.getId();
         Long followeeId = request.getFolloweeId();
         FollowResponseDto follow = followService.follow(followerId, followeeId);
 
         return ResponseEntity.ok(follow);
     }
 
-    @DeleteMapping("/{followerId}/{followeeId}")
+    @DeleteMapping("/{followeeId}")
     @Operation(summary = "언팔로우")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "성공"),
         @ApiResponse(responseCode = "404", description = "사용자 없음"),
     })
     public ResponseEntity<Void> unfollow(
-            @PathVariable Long followerId, @PathVariable Long followeeId) {
-        followService.unfollow(followerId, followeeId);
+            @AuthenticationPrincipal MinilogUserDetails userDetails,
+            @PathVariable Long followeeId) {
+        followService.unfollow(userDetails.getId(), followeeId);
         return ResponseEntity.ok().build();
     }
 
