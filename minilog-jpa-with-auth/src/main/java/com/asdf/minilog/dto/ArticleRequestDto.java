@@ -16,6 +16,5 @@ public class ArticleRequestDto {
             example = "0",
             required = true,
             deprecated = true)
-    @NonNull
     private Long authorId;
 }

@@ -13,7 +13,6 @@ public class FollowRequestDto {
             example = "0",
             required = true,
             deprecated = true)
-    @NonNull
     private Long followerId;
 
     @NonNull private Long followeeId;
