@@ -34,10 +34,9 @@ public class ArticleService {
             userRepository
                 .findById(userId)
                 .orElseThrow(
-                    () ->
-                        new UserNotFoundException(
-                            String.format(
-                                "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
+                    () -> new UserNotFoundException(
+                        String.format(
+                        "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
 
         Article article = Article.builder().content(content).author(user).build();
         Article savedArticle = articleRepository.save(article);
@@ -47,14 +46,13 @@ public class ArticleService {
 
     public void deleteArticle(Long authorId, Long articleId) {
         Article article =
-                articleRepository
-                        .findById(articleId)
-                        .orElseThrow(
-                                () ->
-                                        new ArticleNotFoundException(
-                                                String.format(
-                                                        "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
-                                                        articleId)));
+            articleRepository
+                .findById(articleId)
+                .orElseThrow(
+                    () -> new ArticleNotFoundException(
+                        String.format(
+                            "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
+                            articleId)));
 
         if (!article.getAuthor().getId().equals(authorId)) {
             throw new NotAuthorizedException("게시글 작성자만 삭제할 수 있습니다.");
@@ -65,14 +63,13 @@ public class ArticleService {
 
     public ArticleResponseDto updateArticle(Long authorId, Long articleId, String content) {
         Article article =
-                articleRepository
-                        .findById(articleId)
-                        .orElseThrow(
-                                () ->
-                                        new ArticleNotFoundException(
-                                                String.format(
-                                                        "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
-                                                        articleId)));
+            articleRepository
+                .findById(articleId)
+                .orElseThrow(
+                    () -> new ArticleNotFoundException(
+                        String.format(
+                            "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
+                            articleId)));
 
         if (!article.getAuthor().getId().equals(authorId)) {
             throw new NotAuthorizedException("게시글 작성자만 수정할 수 있습니다.");
@@ -87,14 +84,13 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public ArticleResponseDto getArticleById(Long articleId) {
         Article article =
-                articleRepository
-                        .findById(articleId)
-                        .orElseThrow(
-                                () ->
-                                        new ArticleNotFoundException(
-                                                String.format(
-                                                        "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
-                                                        articleId)));
+            articleRepository
+                .findById(articleId)
+                .orElseThrow(
+                    () -> new ArticleNotFoundException(
+                        String.format(
+                            "해당 아이디(%d)를 가진 게시글을 찾을 수 없습니다.",
+                            articleId)));
 
         return EntityDtoMapper.toDto(article);
     }
@@ -103,13 +99,12 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public List<ArticleResponseDto> getFeedListByFollowerId(Long userId) {
         User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                String.format(
-                                                        "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
+            userRepository
+                .findById(userId)
+                .orElseThrow(
+                    () -> new UserNotFoundException(
+                        String.format(
+                            "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
 
         var feedList = articleRepository.findAllByFollowerId(user.getId());
         return feedList.stream().map(EntityDtoMapper::toDto).toList();
@@ -118,13 +113,12 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public List<ArticleResponseDto> getArticleListByUserId(Long userId) {
         User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                String.format(
-                                                        "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
+            userRepository
+                .findById(userId)
+                .orElseThrow(
+                    () -> new UserNotFoundException(
+                        String.format(
+                            "해당 아이디(%d)를 가진 사용자를 찾을 수 없습니다.", userId)));
 
         var articleList = articleRepository.findAllByAuthorId(user.getId());
         return articleList.stream().map(EntityDtoMapper::toDto).toList();

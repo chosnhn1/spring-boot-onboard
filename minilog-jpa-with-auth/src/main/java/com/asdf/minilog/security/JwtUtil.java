@@ -2,25 +2,30 @@ package com.asdf.minilog.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
 import java.io.Serializable;
-import java.security.Key;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import javax.crypto.spec.SecretKeySpec;
+
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 /** 
  * 토큰 관련 로직 담당 클래스
+ * 
  * (SRP 관점에서 "Util" 클래스는 썩 좋은 방법은 아니다 - less cohesive - 현실적이지만)
  * 어떻게 개선할 수 있을까? 생각해보기
  * 
- * 책은 이 클래스를 "Serializable" 구현체로 만들던데
+ * 책은 이 클래스를 "Serializable" 구현체로 만들던데 - 이유 자세히 알아보기
+ * 작성하다보니 많은 메서드들이 이 버전에선 deprecated되었다 -> 현대화하기! (완료)
+ * 
+ * access-refresh 방식으로 고치는 것도 해보자
  */
 
 @Component
@@ -57,12 +62,10 @@ public class JwtUtil implements Serializable {
         return claimsResolver.apply(claims);
     }
 
+    // 토큰의 내용(claims)을 읽는 주요 메서드
     public Claims getAllClaimsFromToken(String token) {
-        Key signingKey =
-            new SecretKeySpec(
-                Base64.getDecoder().decode(secret), SignatureAlgorithm.HS256.getJcaName());
-        
-        return Jwts.parser().setSigningKey(signingKey).build().parseClaimsJws(token).getBody();
+        SecretKey signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -76,15 +79,12 @@ public class JwtUtil implements Serializable {
         claims.put("userId", userId);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_VALIDITY * 1000))
-                .signWith(
-                        new SecretKeySpec(
-                                Base64.getDecoder().decode(secret),
-                                SignatureAlgorithm.HS256.getJcaName()))
-                .compact();
+            .claims(claims)
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + JWT_VALIDITY * 1000))
+            .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))      // 이 부분 잘 살펴보기... (잘못 구현하기 쉬운 것 같다)
+            .compact();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
