@@ -13,53 +13,74 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * 요청에 대해 한번씩 실행되는 필터로 토큰 읽고 설정하기
+ * 사용례: SecurityConfig 참조
+ */
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private static final Logger Logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
 
-    @Autowired private UserDetailsService jwUserDetailsService;
- 
+    @Autowired private UserDetailsService jwtUserDetailsService;
     @Autowired private JwtUtil jwtTokenUtil;
 
     @Override
     protected void doFilterInternal(
-            jakarta.servlet.http.HttpServletRequest request,
-            jakarta.servlet.http.HttpServletResponse response,
-            jakarta.servlet.FilterChain filterChain)
+        jakarta.servlet.http.HttpServletRequest request,
+        jakarta.servlet.http.HttpServletResponse response,
+        jakarta.servlet.FilterChain filterChain)
             throws jakarta.servlet.ServletException, IOException {
         String requestTokenHeader = request.getHeader("Authorization");
         String username = null;
         String jwt = null;
 
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+        // process token
+        if (requestTokenHeader == null) {
+            logger.warn("Request doesn't have token");
+        } else if (!requestTokenHeader.startsWith("Bearer ")) {
+            logger.warn("JWT does not begin with Bearer String");
+        } else {
             jwt = requestTokenHeader.substring(7);
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwt);
             } catch (IllegalArgumentException e) {
                 logger.error("Unable to get JWT", e);
             } catch (ExpiredJwtException e) {
-                logger.warn("JWT has expired", e);
+                logger.error("JWT has expired", e);
             }
-        } else {
-            logger.warn("JWT does not begin with Bearer String");
         }
 
+        // if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+        //     jwt = requestTokenHeader.substring(7);
+        //     try {
+        //         username = jwtTokenUtil.getUsernameFromToken(jwt);
+        //     } catch (IllegalArgumentException e) {
+        //         logger.error("Unable to get JWT", e);
+        //     } catch (ExpiredJwtException e) {
+        //         logger.warn("JWT has expired", e);
+        //     }
+        // } else {
+        //     logger.warn("JWT does not begin with Bearer String");
+        // }
+
+        // retrieve auth from successfully loaded token if context doesn't have auth info
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.jwUserDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
 
             if (jwtTokenUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
+                    new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+                    new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext()
-                        .setAuthentication(usernamePasswordAuthenticationToken);
+                    .setAuthentication(usernamePasswordAuthenticationToken);
             } else {
                 logger.warn("JWT is not valid");
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

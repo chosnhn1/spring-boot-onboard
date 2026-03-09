@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 인증 컨트롤러
+ * (추후에... refresh token 구현하기)
+ */
 @RestController
 @RequestMapping("/api/v2/auth")
 public class AuthenticationController {
@@ -35,7 +39,8 @@ public class AuthenticationController {
             AuthenticationManager authenticationManager,
             JwtUtil jwtTokenUtil,
             UserDetailsService userDetailsService,
-            UserService userService) {
+            UserService userService
+        ) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
         this.userDetailsService = userDetailsService;
@@ -46,23 +51,35 @@ public class AuthenticationController {
     public ResponseEntity<?> createAuthenticationToken(
             @RequestBody AuthenticationRequestDto authRequest) {
         try {
+            // DTO로 auth Manager에 로그인 요청
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequest.getUsername(), authRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                    authRequest.getUsername(),
+                    authRequest.getPassword()
+                ));
+            
+            // 로그인 성공 처리
             UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(authRequest.getUsername());
+                userDetailsService.loadUserByUsername(authRequest.getUsername());
+
+            // JWT 토큰과 사용자 객체 일부를 포함한 응답 작성
             UserResponseDto userResponseDto =
-                    userService.getUserByUsername(userDetails.getUsername());
+                userService.getUserByUsername(userDetails.getUsername());
+
             return ResponseEntity.ok(
-                    AuthenticationResponseDto.builder()
-                            .jwt(jwtTokenUtil.generateToken(userDetails, userResponseDto.getId()))
-                            .build());
+                AuthenticationResponseDto.builder()
+                    .jwt(jwtTokenUtil.generateToken(userDetails, userResponseDto.getId()))
+                    .build());
+
         } catch (BadCredentialsException e) {
             logger.error("Authentication failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentails");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Invalid credentails");
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred during authentication");
+                .body("An error occurred during authentication");
+
         }
     }
 }

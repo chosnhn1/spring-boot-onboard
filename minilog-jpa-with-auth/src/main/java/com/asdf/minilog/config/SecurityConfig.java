@@ -28,8 +28,8 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(
-            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            JwtRequestFilter jwtRequestFilter) {
+        JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+        JwtRequestFilter jwtRequestFilter) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtRequestFilter = jwtRequestFilter;
     }
@@ -39,9 +39,11 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // 인증 과정 Bean
     @Bean
     public AuthenticationManager authenticationManagerBean(
-            AuthenticationConfiguration configuration) throws Exception {
+        // 참고: DaoAuthenticationProvider (Data Access Object)
+        AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -49,31 +51,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        (requests) ->
-                                requests.requestMatchers(
-                                                "/api/v2/auth/login",
-                                                "/swagger-ui/**",
-                                                "/v3/api-docs/**")
-                                        .permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v2/user")
-                                        .permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/v2/user/{userId}")
-                                        .permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/v2/user/{userId}")
-                                        .hasRole("ADMIN")
-                                        .anyRequest()
-                                        .authenticated())
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(
+                (requests) ->
+                    requests.requestMatchers(
+                            "/api/v2/auth/login",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v2/user")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v2/user/{userId}")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v2/user/{userId}")
+                        .hasRole("ADMIN")
+                        .anyRequest()
+                        .authenticated())
                 .exceptionHandling(
-                        exceptionHandling ->
-                                exceptionHandling.authenticationEntryPoint(
-                                        jwtAuthenticationEntryPoint))
+                    exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(
+                            jwtAuthenticationEntryPoint))
+                // 세션 비활성화
                 .sessionManagement(
-                        sessionManagement ->
-                                sessionManagement.sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS));
+                    sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(
+                            SessionCreationPolicy.STATELESS));
 
+        // 기본 인증 필터에 앞서 JWT 필터 적용
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();

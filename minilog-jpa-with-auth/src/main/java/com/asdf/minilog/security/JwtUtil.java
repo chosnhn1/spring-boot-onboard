@@ -15,13 +15,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+/** 
+ * 토큰 관련 로직 담당 클래스
+ * (SRP 관점에서 "Util" 클래스는 썩 좋은 방법은 아니다 - less cohesive - 현실적이지만)
+ * 어떻게 개선할 수 있을까? 생각해보기
+ * 
+ * 책은 이 클래스를 "Serializable" 구현체로 만들던데
+ */
+
 @Component
 public class JwtUtil implements Serializable {
     private static final long serialVersionUID = -2550185165626007488L;
-    public static final long JWT_VALIDITY = 5 * 60 * 60;
 
     @Value("${jwt.secret}")
     private String secret;
+
+    @Value("${jwt.expire}")
+    public Long JWT_VALIDITY; // 초 단위
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -35,7 +45,7 @@ public class JwtUtil implements Serializable {
             jwt = token;
         }
 
-        return getClaimFromToken(token, claims -> claims.get("userId", Long.class));
+        return getClaimFromToken(jwt, claims -> claims.get("userId", Long.class));
     }
 
     public Date getExpirationFromToken(String token) {
@@ -49,8 +59,9 @@ public class JwtUtil implements Serializable {
 
     public Claims getAllClaimsFromToken(String token) {
         Key signingKey =
-                new SecretKeySpec(
-                        Base64.getDecoder().decode(secret), SignatureAlgorithm.HS256.getJcaName());
+            new SecretKeySpec(
+                Base64.getDecoder().decode(secret), SignatureAlgorithm.HS256.getJcaName());
+        
         return Jwts.parser().setSigningKey(signingKey).build().parseClaimsJws(token).getBody();
     }
 
@@ -59,6 +70,7 @@ public class JwtUtil implements Serializable {
         return expiration.before(new Date());
     }
 
+    // 토큰 작성
     public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -77,6 +89,8 @@ public class JwtUtil implements Serializable {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         String username = getUsernameFromToken(token);
+
+        // 요청-토큰 사용자명 일치 여부 & 토큰 만료 여부 체크
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }
