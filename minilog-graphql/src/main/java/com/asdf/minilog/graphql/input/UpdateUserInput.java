@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserInput {
 
-    private Long id;
+    private Long userId;
     private String username;
     private String password;
 }

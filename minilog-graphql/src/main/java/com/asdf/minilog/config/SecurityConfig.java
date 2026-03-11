@@ -3,6 +3,7 @@ package com.asdf.minilog.config;
 import com.asdf.minilog.security.JwtAuthenticationEntryPoint;
 import com.asdf.minilog.security.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,8 +27,8 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private JwtRequestFilter jwtRequestFilter;
 
-    //     @Value("${spring.graphql.graphiql.path}")
-    //     private String graphiqlPath;
+    @Value("${spring.graphql.graphiql.path}")
+    private String graphiqlPath;
 
     @Autowired
     public SecurityConfig(
@@ -68,6 +69,10 @@ public class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers(HttpMethod.DELETE, "/api/v2/user/{userId}")
                                         .hasRole("ADMIN")
+                                        .requestMatchers(graphiqlPath)
+                                        .permitAll()
+                                        .requestMatchers("/graphql")
+                                        .permitAll()
                                         .anyRequest()
                                         .authenticated())
                 .exceptionHandling(

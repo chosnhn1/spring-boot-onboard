@@ -1,7 +1,6 @@
 spring:
   profiles:
     include: secret
-  config:import:optional:file: .env[.properties]
   application:
     name: minilog-graphql
   datasource:
@@ -14,6 +13,9 @@ spring:
       ddl-auto: update
     show-sql: true
   graphql:
+    schema:
+      introspection:
+        enabled: true
     graphiql:
       enabled: true
-      path: graphiql
+      path: /graphiql
