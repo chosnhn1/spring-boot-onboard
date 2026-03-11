@@ -48,19 +48,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-        // if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-        //     jwt = requestTokenHeader.substring(7);
-        //     try {
-        //         username = jwtTokenUtil.getUsernameFromToken(jwt);
-        //     } catch (IllegalArgumentException e) {
-        //         logger.error("Unable to get JWT", e);
-        //     } catch (ExpiredJwtException e) {
-        //         logger.warn("JWT has expired", e);
-        //     }
-        // } else {
-        //     logger.warn("JWT does not begin with Bearer String");
-        // }
-
         // retrieve auth from successfully loaded token if context doesn't have auth info
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
