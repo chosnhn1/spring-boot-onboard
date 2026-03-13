@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: minilog-graphql
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  profiles:
+    include: secret
+
