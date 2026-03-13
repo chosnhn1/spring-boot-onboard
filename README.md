@@ -26,3 +26,10 @@
   * /api/todos/v1 endpoint
   * CRUD Unit Test
   * Docs and Test
+
+
+## 문서
+
+* [Spring for GraphQL](https://docs.spring.io/spring-boot/reference/web/spring-graphql.html)
+* [Spotless](https://github.com/diffplug/spotless)
+  * [Google AOSP](https://source.android.com/docs/setup/contribute/code-style)
